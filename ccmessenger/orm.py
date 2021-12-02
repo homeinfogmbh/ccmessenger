@@ -51,5 +51,5 @@ class Attachment(CCMessengerModel):     # pylint: disable=R0903
     """A file attachment."""
 
     message = ForeignKeyField(Message, column_name='message',
-                              on_delete='CASCADE')
+                              backref='attachments', on_delete='CASCADE')
     file = ForeignKeyField(File, column_name='file')
