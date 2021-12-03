@@ -8,15 +8,13 @@ from filedb import File
 from mdb import Customer
 from peewee import DateTimeField, ForeignKeyField, TextField
 
-from peeweeplus import JSONModel, MySQLDatabase
-
-from ccmessenger.config import CONFIG
+from peeweeplus import JSONModel, MySQLDatabaseProxy
 
 
 __all__ = ['Message', 'Attachment']
 
 
-DATABASE = MySQLDatabase.from_config(CONFIG['db'])
+DATABASE = MySQLDatabaseProxy('ccmessenger')
 
 
 class CCMessengerModel(JSONModel):  # pylint: disable=R0903
