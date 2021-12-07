@@ -18,7 +18,8 @@ __all__ = [
     'get_own_message',
     'get_user_messages',
     'get_user_message',
-    'get_attachment'
+    'get_own_attachments',
+    'get_own_attachment'
 ]
 
 
@@ -65,8 +66,14 @@ def get_user_message(ident: int, customer: Union[Customer, int]) -> Message:
     return get_user_messages(customer).where(Message.id == ident).get()
 
 
-def get_attachment(ident: int) -> Attachment:
+def get_own_attachments(user: Union[User, int]) -> Attachment:
     """Returns the respective attachment."""
 
-    return Attachment.select(Attachment, File).join(File).where(
-        Attachment.id == ident).get()
+    return Attachment.select(Attachment, Message, File).join(
+        Message).join_from(Attachment, File).where(Message.user == user)
+
+
+def get_own_attachment(ident: int, user: Union[User, int]) -> Attachment:
+    """Returns the respective attachment."""
+
+    return get_own_attachments(user).where(Attachment.id == ident).get()
