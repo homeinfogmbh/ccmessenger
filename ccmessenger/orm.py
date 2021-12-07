@@ -30,9 +30,9 @@ class Message(CCMessengerModel):
 
     parent = ForeignKeyField('self', column_name='parent', null=True)
     user = ForeignKeyField(User, column_name='user', null=True,
-                           on_delete='CASCADE')
+                           on_delete='CASCADE', lazy_load=False)
     customer = ForeignKeyField(Customer, column_name='customer', null=True,
-                               on_delete='CASCADE')
+                               on_delete='CASCADE', lazy_load=False)
     text = TextField()
     created = DateTimeField(default=datetime.now)
 
