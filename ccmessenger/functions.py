@@ -1,6 +1,6 @@
 """Common functions."""
 
-from typing import Union
+from typing import Optional, Union
 
 from peewee import ModelSelect
 
@@ -43,7 +43,8 @@ def get_own_messages(user: Union[User, int]) -> ModelSelect:
 
     return Message.select(Message, User, Tenement, Address, Attachment).join(
         User).join(Tenement).join(Address).join_from(
-        Message, Attachment).where(Message.user == user)
+        Message, Attachment).where(
+        (Message.user == user) & (Message.customer >> None))
 
 
 def get_own_message(ident: int, user: Union[User, int]) -> Message:
@@ -52,18 +53,26 @@ def get_own_message(ident: int, user: Union[User, int]) -> Message:
     return get_own_messages(user).where(Message.id == ident).get()
 
 
-def get_user_messages(customer: Union[Customer, int]) -> ModelSelect:
+def get_user_messages(customer: Union[Customer, int], *,
+                      user: Optional[Union[User, int]] = None) -> ModelSelect:
     """Selects user messages of the given customer."""
+
+    condition = Tenement.customer == customer
+
+    if user is None:
+        condition &= Message.user == user
 
     return Message.select(Message, User, Tenement, Address, Attachment).join(
         User).join(Tenement).join(Address).join_from(
-        Message, Attachment).where(Tenement.customer == customer)
+        Message, Attachment).where(condition)
 
 
-def get_user_message(ident: int, customer: Union[Customer, int]) -> Message:
+def get_user_message(ident: int, customer: Union[Customer, int], *,
+                     user: Optional[Union[User, int]] = None) -> Message:
     """Returns a user message of the give customer."""
 
-    return get_user_messages(customer).where(Message.id == ident).get()
+    return get_user_messages(customer, user=user).where(
+        Message.id == ident).get()
 
 
 def get_own_attachments(user: Union[User, int]) -> Attachment:
