@@ -5,6 +5,7 @@ from typing import Union
 from peewee import ModelSelect
 
 from comcatlib import User
+from filedb import File
 from mdb import Address, Company, Customer, Tenement
 
 from ccmessenger.orm import Message, Attachment
@@ -16,7 +17,8 @@ __all__ = [
     'get_own_messages',
     'get_own_message',
     'get_user_messages',
-    'get_user_message'
+    'get_user_message',
+    'get_attachment'
 ]
 
 
@@ -61,3 +63,10 @@ def get_user_message(ident: int, customer: Union[Customer, int]) -> Message:
     """Returns a user message of the give customer."""
 
     return get_user_messages(customer).where(Message.id == ident).get()
+
+
+def get_attachment(ident: int) -> Attachment:
+    """Returns the respective attachment."""
+
+    return Attachment.select(Attachment, File).join(File).where(
+        Attachment.id == ident).get()
