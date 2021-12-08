@@ -16,7 +16,6 @@ __all__ = [
     'get_customer_message',
     'get_user_messages',
     'get_user_message',
-    'get_attachments',
     'get_attachment'
 ]
 
@@ -65,14 +64,19 @@ def get_user_message(ident: int, user: Union[User, int], *,
     return get_user_messages(user, own=own).where(Message.id == ident).get()
 
 
-def get_attachments(message: Union[Message, int]) -> ModelSelect:
-    """Selects attachments of the message."""
-
-    return Attachment.select(Attachment, File).join(Attachment, File).where(
-        Attachment.message == message)
-
-
-def get_attachment(ident: int, message: Union[Message, int]) -> Attachment:
+def get_attachment(ident: int, *,
+                   customer: Optional[Union[Customer, int]] = None,
+                   user: Optional[Union[User, int]] = None
+                   ) -> ModelSelect:
     """Returns the respective attachment."""
 
-    return get_attachments(message).where(Attachment.id == ident).get()
+    condition = Attachment.id == ident
+
+    if customer is not None:
+        condition &= Message.customer == customer
+
+    if user is not None:
+        condition &= Message.user == user
+
+    return Attachment.select(Attachment, File).join(Attachment, File).where(
+        condition).get()
