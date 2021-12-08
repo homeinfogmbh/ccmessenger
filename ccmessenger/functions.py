@@ -27,8 +27,11 @@ def get_customer_messages(customer: Union[Customer, int]) -> ModelSelect:
     """Selects messages of the given customer."""
 
     return Message.select(Message, Customer, Company, Attachment).join(
-        Customer).join(Company).join_from(Message, Attachment).where(
-        Message.customer == customer)
+        Customer).join(Company).join_from(Message, User).join(
+        Tenement).join_from(Message, Attachment).where(
+        (Message.customer == customer)
+        | (Tenement.customer == customer)
+    )
 
 
 def get_customer_message(ident: int, customer: Union[Customer, int]) \
