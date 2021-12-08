@@ -2,7 +2,7 @@
 
 from typing import Optional, Union
 
-from peewee import ModelSelect
+from peewee import JOIN, ModelSelect
 
 from comcatlib import User
 from filedb import File
@@ -26,13 +26,15 @@ def get_customer_messages(customer: Union[Customer, int], *,
     """Selects messages of the given customer."""
 
     condition = Message.customer == customer
+    condition |= Tenement.customer == customer
 
     if user is not None:
         condition &= Message.user == user
 
     return Message.select(Message, Customer, Company, Attachment).join(
-        Customer).join(Company).join_from(Message, User).join(
-        Tenement).join_from(Message, Attachment).where(condition)
+        Customer, JOIN.LEFT_OUTER).join(Company, JOIN.LEFT_OUTER).join_from(
+        Message, User).join(Tenement).join_from(
+        Message, Attachment, JOIN.LEFT_OUTER).where(condition)
 
 
 def get_customer_message(ident: int, customer: Union[Customer, int], *,
@@ -54,7 +56,7 @@ def get_user_messages(user: Union[User, int], *,
 
     return Message.select(Message, User, Tenement, Address, Attachment).join(
         User).join(Tenement).join(Address).join_from(
-        Message, Attachment).where(condition)
+        Message, Attachment, JOIN.LEFT_OUTER).where(condition)
 
 
 def get_user_message(ident: int, user: Union[User, int], *,
@@ -73,12 +75,16 @@ def get_attachment(ident: int, *,
     condition = Attachment.id == ident
 
     if customer is not None:
-        condition &= Message.customer == customer
+        condition &= (
+            (Message.customer == customer)
+            | (Tenement.customer == customer)
+        )
     elif own:
         condition &= Message.customer >> None
 
     if user is not None:
         condition &= Message.user == user
 
-    return Attachment.select(Attachment, Message, File).join(
-        Message).join_from(Attachment, File).where(condition).get()
+    return Attachment.select(Attachment, Message, User, Tenement, File).join(
+        Message).join(User).join(Tenement).join_from(Attachment, File).where(
+        condition).get()
