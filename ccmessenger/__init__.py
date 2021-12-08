@@ -1,5 +1,6 @@
 """ComCat tenant <-> landlord messenger."""
 
+from ccmessenger.errors import ERRORS
 from ccmessenger.functions import get_attachment
 from ccmessenger.functions import get_customer_messages
 from ccmessenger.functions import get_customer_message
@@ -9,6 +10,7 @@ from ccmessenger.orm import Attachment, Message
 
 
 __all__ = [
+    'ERRORS',
     'Attachment',
     'Message',
     'get_attachment',
