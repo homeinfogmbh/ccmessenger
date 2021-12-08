@@ -14,78 +14,65 @@ from ccmessenger.orm import Message, Attachment
 __all__ = [
     'get_customer_messages',
     'get_customer_message',
-    'get_own_messages',
-    'get_own_message',
     'get_user_messages',
     'get_user_message',
-    'get_own_attachments',
-    'get_own_attachment'
+    'get_attachments',
+    'get_attachment'
 ]
 
 
-def get_customer_messages(customer: Union[Customer, int]) -> ModelSelect:
+def get_customer_messages(customer: Union[Customer, int], *,
+                          user: Optional[Union[User, int]] = None
+                          ) -> ModelSelect:
     """Selects messages of the given customer."""
+
+    condition = Message.customer == customer
+
+    if user is not None:
+        condition &= Message.user == user
 
     return Message.select(Message, Customer, Company, Attachment).join(
         Customer).join(Company).join_from(Message, User).join(
-        Tenement).join_from(Message, Attachment).where(
-        (Message.customer == customer)
-        | (Tenement.customer == customer)
-    )
+        Tenement).join_from(Message, Attachment).where(condition)
 
 
-def get_customer_message(ident: int, customer: Union[Customer, int]) \
-        -> Message:
+def get_customer_message(ident: int, customer: Union[Customer, int], *,
+                         user: Optional[Union[User, int]] = None) -> Message:
     """Returns a customer message."""
 
-    return get_customer_messages(customer).where(Message.id == ident).get()
+    return get_customer_messages(customer, user=user).where(
+        Message.id == ident).get()
 
 
-def get_own_messages(user: Union[User, int]) -> ModelSelect:
+def get_user_messages(user: Union[User, int], *,
+                      own: bool = False) -> ModelSelect:
     """Selects messages of the given user."""
 
-    return Message.select(Message, User, Tenement, Address, Attachment).join(
-        User).join(Tenement).join(Address).join_from(
-        Message, Attachment).where(
-        (Message.user == user) & (Message.customer >> None))
+    condition = Message.user == user
 
-
-def get_own_message(ident: int, user: Union[User, int]) -> Message:
-    """Returns a user message."""
-
-    return get_own_messages(user).where(Message.id == ident).get()
-
-
-def get_user_messages(customer: Union[Customer, int], *,
-                      user: Optional[Union[User, int]] = None) -> ModelSelect:
-    """Selects user messages of the given customer."""
-
-    condition = Tenement.customer == customer
-
-    if user is None:
-        condition &= Message.user == user
+    if own:
+        condition &= Message.customer >> None
 
     return Message.select(Message, User, Tenement, Address, Attachment).join(
         User).join(Tenement).join(Address).join_from(
         Message, Attachment).where(condition)
 
 
-def get_user_message(ident: int, customer: Union[Customer, int], *,
-                     user: Optional[Union[User, int]] = None) -> Message:
-    """Returns a user message of the give customer."""
+def get_user_message(ident: int, user: Union[User, int], *,
+                     own: bool = False) -> Message:
+    """Returns a user message."""
 
-    return get_user_messages(customer, user=user).where(
-        Message.id == ident).get()
+    return get_user_messages(user, own=own).where(Message.id == ident).get()
 
 
-def get_own_attachments(user: Union[User, int]) -> Attachment:
+def get_attachments(message: Union[Message, int]) -> ModelSelect:
+    """Selects attachments of the message."""
+
+    return Attachment.select(Attachment, File).join(Attachment, File).where(
+        Attachment.message == message)
+
+
+def get_attachment(ident: int, message: Union[Message, int]) -> Attachment:
     """Returns the respective attachment."""
 
-    return Attachment.select(Attachment, Message, File).join(
-        Message).join_from(Attachment, File).where(Message.user == user)
-
-
-def get_own_attachment(ident: int, user: Union[User, int]) -> Attachment:
-    """Returns the respective attachment."""
-
-    return get_own_attachments(user).where(Attachment.id == ident).get()
+    return get_attachments(message).where(Attachment.id == ident).get()
