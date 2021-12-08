@@ -66,14 +66,16 @@ def get_user_message(ident: int, user: Union[User, int], *,
 
 def get_attachment(ident: int, *,
                    customer: Optional[Union[Customer, int]] = None,
-                   user: Optional[Union[User, int]] = None
-                   ) -> ModelSelect:
+                   user: Optional[Union[User, int]] = None,
+                   own: bool = False) -> ModelSelect:
     """Returns the respective attachment."""
 
     condition = Attachment.id == ident
 
     if customer is not None:
         condition &= Message.customer == customer
+    elif own:
+        condition &= Message.customer >> None
 
     if user is not None:
         condition &= Message.user == user
