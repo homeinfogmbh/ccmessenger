@@ -80,5 +80,5 @@ def get_attachment(ident: int, *,
     if user is not None:
         condition &= Message.user == user
 
-    return Attachment.select(Attachment, File).join(Attachment, File).where(
-        condition).get()
+    return Attachment.select(Attachment, Message, File).join(
+        Message).join_from(Attachment, File).where(condition).get()
