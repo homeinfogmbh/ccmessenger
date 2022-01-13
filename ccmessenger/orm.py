@@ -46,6 +46,14 @@ class Message(CCMessengerModel):
         """Creates a message for the given customer."""
         return cls(customer=customer, text=text)
 
+    def to_json(self, **kwargs) -> dict:
+        """Return a JSON-ish dict."""
+        json = super().to_json(**kwargs)
+        json['attachments'] = [
+            attachment.id for attachment in self.attachments
+        ]
+        return json
+
 
 class Attachment(CCMessengerModel):     # pylint: disable=R0903
     """A file attachment."""
