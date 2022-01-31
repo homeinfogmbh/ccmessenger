@@ -4,14 +4,13 @@ from __future__ import annotations
 from datetime import datetime
 
 from comcatlib import User
-from filedb import File
 from mdb import Customer
 from peewee import DateTimeField, ForeignKeyField, TextField
 
 from peeweeplus import JSONModel, MySQLDatabaseProxy
 
 
-__all__ = ['Message', 'Attachment']
+__all__ = ['CustomerMessage', 'UserMessage']
 
 
 DATABASE = MySQLDatabaseProxy('ccmessenger')
@@ -26,38 +25,29 @@ class CCMessengerModel(JSONModel):  # pylint: disable=R0903
 
 
 class Message(CCMessengerModel):
-    """A Message."""
+    """Common message base."""
 
-    parent = ForeignKeyField('self', column_name='parent', null=True)
-    user = ForeignKeyField(User, column_name='user', on_delete='CASCADE',
-                           lazy_load=False)
-    customer = ForeignKeyField(Customer, column_name='customer', null=True,
-                               on_delete='CASCADE', lazy_load=False)
     text = TextField()
     created = DateTimeField(default=datetime.now)
 
-    @classmethod
-    def for_user(cls, user: User, text: str) -> Message:
-        """Creates a message for the given user."""
-        return cls(user=user, text=text)
 
-    @classmethod
-    def for_customer(cls, customer: Customer, text: str) -> Message:
-        """Creates a message for the given customer."""
-        return cls(customer=customer, text=text)
+class CustomerMessage(Message):
+    """A message from a customer to a user."""
 
-    def to_json(self, **kwargs) -> dict:
-        """Return a JSON-ish dict."""
-        json = super().to_json(**kwargs)
-        json['attachments'] = [
-            attachment.id for attachment in self.attachments
-        ]
-        return json
+    sender = ForeignKeyField(
+        Customer, column_name='sender', on_delete='CASCADE', lazy_load=False
+    )
+    recipient = ForeignKeyField(
+        User, column_name='recipient', on_delete='CASCADE', lazy_load=False
+    )
 
 
-class Attachment(CCMessengerModel):     # pylint: disable=R0903
-    """A file attachment."""
+class UserMessage(Message):
+    """A message from a user to a customer."""
 
-    message = ForeignKeyField(Message, column_name='message',
-                              backref='attachments', on_delete='CASCADE')
-    file = ForeignKeyField(File, column_name='file')
+    sender = ForeignKeyField(
+        User, column_name='sender', on_delete='CASCADE', lazy_load=False
+    )
+    recipient = ForeignKeyField(
+        Customer, column_name='recipient', on_delete='CASCADE', lazy_load=False
+    )

@@ -10,12 +10,8 @@ setup(
     },
     setup_requires=['setuptools_scm'],
     install_requires=[
-        'configlib',
-        'emaillib',
-        'flask',
-        'functoolsplus',
+        'comcatlib',
         'mdb',
-        'notificationlib',
         'peewee',
         'peeweeplus',
         'wsgilib'

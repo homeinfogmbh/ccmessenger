@@ -10,7 +10,9 @@ __all__ = ['ERRORS']
 
 ERRORS = {
     Attachment.DoesNotExist: lambda _: JSONMessage(
-        'No such attachment.', status=404),
+        'No such attachment.', status=404
+    ),
     Message.DoesNotExist: lambda _: JSONMessage(
-        'No such message.', status=404)
+        'No such message.', status=404
+    )
 }

@@ -2,89 +2,56 @@
 
 from typing import Optional, Union
 
-from peewee import JOIN, ModelSelect
+from peewee import JOIN, Select
 
 from comcatlib import User
-from filedb import File
 from mdb import Address, Company, Customer, Tenement
 
-from ccmessenger.orm import Message, Attachment
+from ccmessenger.orm import CustomerMessage, UserMessage
 
 
 __all__ = [
     'get_customer_messages',
     'get_customer_message',
     'get_user_messages',
-    'get_user_message',
-    'get_attachment'
+    'get_user_message'
 ]
 
 
-def get_customer_messages(customer: Union[Customer, int], *,
-                          user: Optional[Union[User, int]] = None
-                          ) -> ModelSelect:
+def get_customer_messages(
+        sender: Union[Customer, int], *,
+        recipient: Optional[Union[User, int]] = None
+) -> Select:
     """Selects messages of the given customer."""
 
-    condition = Message.customer == customer
-    condition |= Tenement.customer == customer
+    condition = CustomerMessage.sender == sender
 
-    if user is not None:
-        condition &= Message.user == user
+    if recipient is not None:
+        condition &= CustomerMessage.recipient == recipient
 
-    return Message.select(Message, Customer, Company, Attachment).join(
+    return CustomerMessage.select(CustomerMessage, Customer, Company).join(
         Customer, JOIN.LEFT_OUTER).join(Company, JOIN.LEFT_OUTER).join_from(
-        Message, User).join(Tenement).join_from(
-        Message, Attachment, JOIN.LEFT_OUTER).where(condition)
+        CustomerMessage, User).join(Tenement).where(condition)
 
 
-def get_customer_message(ident: int, customer: Union[Customer, int], *,
-                         user: Optional[Union[User, int]] = None) -> Message:
+def get_customer_message(
+        ident: int, sender: Union[Customer, int], *,
+        recipient: Optional[Union[User, int]] = None
+) -> CustomerMessage:
     """Returns a customer message."""
 
-    return get_customer_messages(customer, user=user).where(
-        Message.id == ident).get()
+    return get_customer_messages(sender, recipient=recipient).where(
+        CustomerMessage.id == ident).get()
 
 
-def get_user_messages(user: Union[User, int], *,
-                      own: bool = False) -> ModelSelect:
+def get_user_messages(sender: Union[User, int]) -> Select:
     """Selects messages of the given user."""
 
-    condition = Message.user == user
-
-    if own:
-        condition &= Message.customer >> None
-
-    return Message.select(Message, User, Tenement, Address, Attachment).join(
-        User).join(Tenement).join(Address).join_from(
-        Message, Attachment, JOIN.LEFT_OUTER).where(condition)
+    return UserMessage.select(UserMessage, User, Tenement, Address).join(
+        User).join(Tenement).join(Address).where(UserMessage.sender == sender)
 
 
-def get_user_message(ident: int, user: Union[User, int], *,
-                     own: bool = False) -> Message:
+def get_user_message(ident: int, sender: Union[User, int]) -> UserMessage:
     """Returns a user message."""
 
-    return get_user_messages(user, own=own).where(Message.id == ident).get()
-
-
-def get_attachment(ident: int, *,
-                   customer: Optional[Union[Customer, int]] = None,
-                   user: Optional[Union[User, int]] = None,
-                   own: bool = False) -> ModelSelect:
-    """Returns the respective attachment."""
-
-    condition = Attachment.id == ident
-
-    if customer is not None:
-        condition &= (
-            (Message.customer == customer)
-            | (Tenement.customer == customer)
-        )
-    elif own:
-        condition &= Message.customer >> None
-
-    if user is not None:
-        condition &= Message.user == user
-
-    return Attachment.select(Attachment, Message, User, Tenement, File).join(
-        Message).join(User).join(Tenement).join_from(Attachment, File).where(
-        condition).get()
+    return get_user_messages(sender).where(UserMessage.id == ident).get()
