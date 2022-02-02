@@ -19,12 +19,16 @@ __all__ = [
 
 
 def get_customer_messages(
-        sender: Union[Customer, int], *,
+        *,
+        sender: Optional[Union[Customer, int]] = None,
         recipient: Optional[Union[User, int]] = None
 ) -> Select:
     """Selects messages of the given customer."""
 
-    condition = CustomerMessage.sender == sender
+    condition = True
+
+    if sender is not None:
+        condition &= CustomerMessage.sender == sender
 
     if recipient is not None:
         condition &= CustomerMessage.recipient == recipient
@@ -35,23 +39,41 @@ def get_customer_messages(
 
 
 def get_customer_message(
-        ident: int, sender: Union[Customer, int], *,
+        ident: int, *,
+        sender: Optional[Union[Customer, int]] = None,
         recipient: Optional[Union[User, int]] = None
 ) -> CustomerMessage:
     """Returns a customer message."""
 
-    return get_customer_messages(sender, recipient=recipient).where(
+    return get_customer_messages(sender=sender, recipient=recipient).where(
         CustomerMessage.id == ident).get()
 
 
-def get_user_messages(sender: Union[User, int]) -> Select:
+def get_user_messages(
+        *,
+        sender: Optional[Union[User, int]] = None,
+        recipient: Optional[Union[Customer, int]] = None
+) -> Select:
     """Selects messages of the given user."""
 
+    condition = True
+
+    if sender is not None:
+        condition &= UserMessage.sender == sender
+
+    if recipient is not None:
+        condition &= UserMessage.recipient == recipient
+
     return UserMessage.select(UserMessage, User, Tenement, Address).join(
-        User).join(Tenement).join(Address).where(UserMessage.sender == sender)
+        User).join(Tenement).join(Address).where(condition)
 
 
-def get_user_message(ident: int, sender: Union[User, int]) -> UserMessage:
+def get_user_message(
+        ident: int, *,
+        sender: Optional[Union[User, int]] = None,
+        recipient: Optional[Union[Customer, int]] = None
+) -> UserMessage:
     """Returns a user message."""
 
-    return get_user_messages(sender).where(UserMessage.id == ident).get()
+    return get_user_messages(sender=sender, recipient=recipient).where(
+        UserMessage.id == ident).get()
