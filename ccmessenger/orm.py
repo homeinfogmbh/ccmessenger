@@ -34,6 +34,9 @@ class Message(CCMessengerModel):
 class CustomerMessage(Message):
     """A message from a customer to a user."""
 
+    class Meta:
+        table_name = 'customer_message'
+
     sender = ForeignKeyField(
         Customer, column_name='sender', on_delete='CASCADE', lazy_load=False
     )
@@ -44,6 +47,9 @@ class CustomerMessage(Message):
 
 class UserMessage(Message):
     """A message from a user to a customer."""
+
+    class Meta:
+        table_name = 'user_message'
 
     sender = ForeignKeyField(
         User, column_name='sender', on_delete='CASCADE', lazy_load=False
