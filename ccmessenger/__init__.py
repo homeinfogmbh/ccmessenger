@@ -1,6 +1,7 @@
 """ComCat tenant <-> landlord messenger."""
 
 from ccmessenger.errors import ERRORS
+from ccmessenger.fcm import notify
 from ccmessenger.functions import get_customer_messages
 from ccmessenger.functions import get_customer_message
 from ccmessenger.functions import get_user_messages
@@ -15,5 +16,6 @@ __all__ = [
     'get_customer_messages',
     'get_customer_message',
     'get_user_messages',
-    'get_user_message'
+    'get_user_message',
+    'notify'
 ]

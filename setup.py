@@ -11,6 +11,7 @@ setup(
     setup_requires=['setuptools_scm'],
     install_requires=[
         'comcatlib',
+        'firebase_admin',
         'mdb',
         'peewee',
         'peeweeplus',
