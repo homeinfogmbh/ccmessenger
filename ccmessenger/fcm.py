@@ -1,5 +1,6 @@
 """Firebase Cloud Messaging API."""
 
+from logging import getLogger
 from firebase_admin.messaging import BatchResponse
 
 from comcatlib.fcm import APP_NAME
@@ -17,6 +18,9 @@ __all__ = ['notify']
 def notify(customer_message: CustomerMessage) -> BatchResponse:
     """Multicast customer message to users."""
 
+    getLogger('ccmessenger').info(
+        'Notifying about customer message: %s', customer_message
+    )
     return multicast_message(
         [
             token.token for token in
