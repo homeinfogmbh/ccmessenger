@@ -11,17 +11,17 @@ from ccmessenger.orm import CustomerMessage, UserMessage
 
 
 __all__ = [
-    'get_customer_messages',
-    'get_customer_message',
-    'get_user_messages',
-    'get_user_message'
+    "get_customer_messages",
+    "get_customer_message",
+    "get_user_messages",
+    "get_user_message",
 ]
 
 
 def get_customer_messages(
-        *,
-        sender: Optional[Union[Customer, int]] = None,
-        recipient: Optional[Union[User, int]] = None
+    *,
+    sender: Optional[Union[Customer, int]] = None,
+    recipient: Optional[Union[User, int]] = None
 ) -> Select:
     """Selects messages of the given customer."""
 
@@ -33,26 +33,35 @@ def get_customer_messages(
     if recipient is not None:
         condition &= CustomerMessage.recipient == recipient
 
-    return CustomerMessage.select(CustomerMessage, Customer, Company).join(
-        Customer, JOIN.LEFT_OUTER).join(Company, JOIN.LEFT_OUTER).join_from(
-        CustomerMessage, User).join(Tenement).where(condition)
+    return (
+        CustomerMessage.select(CustomerMessage, Customer, Company)
+        .join(Customer, JOIN.LEFT_OUTER)
+        .join(Company, JOIN.LEFT_OUTER)
+        .join_from(CustomerMessage, User)
+        .join(Tenement)
+        .where(condition)
+    )
 
 
 def get_customer_message(
-        ident: int, *,
-        sender: Optional[Union[Customer, int]] = None,
-        recipient: Optional[Union[User, int]] = None
+    ident: int,
+    *,
+    sender: Optional[Union[Customer, int]] = None,
+    recipient: Optional[Union[User, int]] = None
 ) -> CustomerMessage:
     """Returns a customer message."""
 
-    return get_customer_messages(sender=sender, recipient=recipient).where(
-        CustomerMessage.id == ident).get()
+    return (
+        get_customer_messages(sender=sender, recipient=recipient)
+        .where(CustomerMessage.id == ident)
+        .get()
+    )
 
 
 def get_user_messages(
-        *,
-        sender: Optional[Union[User, int]] = None,
-        recipient: Optional[Union[Customer, int]] = None
+    *,
+    sender: Optional[Union[User, int]] = None,
+    recipient: Optional[Union[Customer, int]] = None
 ) -> Select:
     """Selects messages of the given user."""
 
@@ -64,16 +73,25 @@ def get_user_messages(
     if recipient is not None:
         condition &= UserMessage.recipient == recipient
 
-    return UserMessage.select(UserMessage, User, Tenement, Address).join(
-        User).join(Tenement).join(Address).where(condition)
+    return (
+        UserMessage.select(UserMessage, User, Tenement, Address)
+        .join(User)
+        .join(Tenement)
+        .join(Address)
+        .where(condition)
+    )
 
 
 def get_user_message(
-        ident: int, *,
-        sender: Optional[Union[User, int]] = None,
-        recipient: Optional[Union[Customer, int]] = None
+    ident: int,
+    *,
+    sender: Optional[Union[User, int]] = None,
+    recipient: Optional[Union[Customer, int]] = None
 ) -> UserMessage:
     """Returns a user message."""
 
-    return get_user_messages(sender=sender, recipient=recipient).where(
-        UserMessage.id == ident).get()
+    return (
+        get_user_messages(sender=sender, recipient=recipient)
+        .where(UserMessage.id == ident)
+        .get()
+    )

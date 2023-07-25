@@ -10,16 +10,16 @@ from peewee import DateTimeField, ForeignKeyField, TextField
 from peeweeplus import JSONModel, MySQLDatabaseProxy
 
 
-__all__ = ['CustomerMessage', 'UserMessage']
+__all__ = ["CustomerMessage", "UserMessage"]
 
 
-DATABASE = MySQLDatabaseProxy('ccmessenger')
+DATABASE = MySQLDatabaseProxy("ccmessenger")
 
 
 class CCMessengerModel(JSONModel):  # pylint: disable=R0903
     """Base model for this database."""
 
-    class Meta:     # pylint: disable=R0903,C0115
+    class Meta:  # pylint: disable=R0903,C0115
         database = DATABASE
         schema = database.database
 
@@ -35,13 +35,13 @@ class CustomerMessage(Message):
     """A message from a customer to a user."""
 
     class Meta:
-        table_name = 'customer_message'
+        table_name = "customer_message"
 
     sender = ForeignKeyField(
-        Customer, column_name='sender', on_delete='CASCADE', lazy_load=False
+        Customer, column_name="sender", on_delete="CASCADE", lazy_load=False
     )
     recipient = ForeignKeyField(
-        User, column_name='recipient', on_delete='CASCADE', lazy_load=False
+        User, column_name="recipient", on_delete="CASCADE", lazy_load=False
     )
 
 
@@ -49,11 +49,11 @@ class UserMessage(Message):
     """A message from a user to a customer."""
 
     class Meta:
-        table_name = 'user_message'
+        table_name = "user_message"
 
     sender = ForeignKeyField(
-        User, column_name='sender', on_delete='CASCADE', lazy_load=False
+        User, column_name="sender", on_delete="CASCADE", lazy_load=False
     )
     recipient = ForeignKeyField(
-        Customer, column_name='recipient', on_delete='CASCADE', lazy_load=False
+        Customer, column_name="recipient", on_delete="CASCADE", lazy_load=False
     )
