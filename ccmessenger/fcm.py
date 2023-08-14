@@ -22,6 +22,8 @@ def notify(customer_message: CustomerMessage) -> BatchResponse:
         "Notifying about customer message: %s", customer_message
     )
 
+    # TODO: Add caption for UrlCode.CONTACT as soon as ComCat app provides a
+    #  respective name.
     try:
         title = CAPTIONS[URLCode.CONTACT]
     except KeyError:
