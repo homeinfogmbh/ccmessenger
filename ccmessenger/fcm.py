@@ -21,9 +21,15 @@ def notify(customer_message: CustomerMessage) -> BatchResponse:
     getLogger("ccmessenger").info(
         "Notifying about customer message: %s", customer_message
     )
+
+    try:
+        title = CAPTIONS[URLCode.CONTACT]
+    except KeyError:
+        return BatchResponse([])
+
     return multicast_message(
         [token.token for token in get_tokens({customer_message.recipient})],
         url_code=URLCode.EVENTS,
-        title=f"{APP_NAME}: {CAPTIONS[URLCode.CONTACT]}",
+        title=f"{APP_NAME}: {title}",
         body=customer_message.text,
     )
